@@ -10,7 +10,6 @@ import '../widget/bottombar_item.dart';
 
 class Home extends StatefulWidget {
   const Home({ Key? key }) : super(key: key);
-
   @override
   _HomeState createState() => _HomeState();
 }
