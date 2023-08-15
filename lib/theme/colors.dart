@@ -17,3 +17,4 @@ const red = Color(0xFFef5013);
 const blue = Color(0xFF03A9F4);
 const light_pink = Color(0xFFF2A5B9);
 const grey = Colors.white70;
+const greenbase = Colors.greenAccent;

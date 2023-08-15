@@ -1,6 +1,8 @@
 import 'package:app_tuoi_cay/view/register_page.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:splash_screen_view/SplashScreenView.dart';
 import '../dialog/loading_dialog.dart';
 import '../dialog/msg_dilog.dart';
@@ -14,10 +16,9 @@ class LogInPage extends StatefulWidget {
 }
 
 class _LogInPageState extends State<LogInPage> {
-
   @override
   Widget build(BuildContext context) {
-    double  heightR,widthR;
+    double heightR, widthR;
     heightR = MediaQuery.of(context).size.height / 1080; //v26
     widthR = MediaQuery.of(context).size.width / 2400;
     var curR = widthR;
@@ -29,7 +30,7 @@ class _LogInPageState extends State<LogInPage> {
       text: "Xin Chào",
       textType: TextType.ColorizeAnimationText,
       textStyle: TextStyle(
-        fontSize: 220*curR,
+        fontSize: 220 * curR,
       ),
       colors: [
         Colors.purple,
@@ -57,6 +58,31 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passController = TextEditingController();
   bool showPassword = false;
+
+  save(var data, var name) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString(name, data);
+  }
+  savebool(var data, var name) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(name, data);
+  }
+  @override
+  void initState(){
+    super.initState();
+    _GetDataSave();
+  }
+  _GetDataSave() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? dataname = prefs.getString('username');
+    String? datapass = prefs.getString('password');
+    setState(() {
+      dataname != null ? _emailController.text = dataname! : "";
+      datapass != null ? _passController.text = datapass! : "";
+    });
+
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -70,7 +96,10 @@ class _LoginPageState extends State<LoginPage> {
               SizedBox(
                 height: 140,
               ),
-              Image.asset("assets/icon1.png",scale: 2,),
+              Image.asset(
+                "assets/icon1.png",
+                scale: 2,
+              ),
               //Image.asset("assets/images/ic_fight.png"),
               Padding(
                 padding: const EdgeInsets.fromLTRB(0, 40, 0, 6),
@@ -90,12 +119,11 @@ class _LoginPageState extends State<LoginPage> {
                   style: TextStyle(fontSize: 18, color: Colors.black),
                   decoration: InputDecoration(
                       labelText: "Email",
-                      prefixIcon: Container(
-                          width: 50,
-                          child: Icon(Icons.email)),
+                      prefixIcon:
+                          Container(width: 50, child: Icon(Icons.email)),
                       border: OutlineInputBorder(
                           borderSide:
-                          BorderSide(color: Color(0xffCED0D2), width: 1),
+                              BorderSide(color: Color(0xffCED0D2), width: 1),
                           borderRadius: BorderRadius.all(Radius.circular(6)))),
                 ),
               ),
@@ -103,7 +131,7 @@ class _LoginPageState extends State<LoginPage> {
                 controller: _passController,
                 style: TextStyle(fontSize: 18, color: Colors.black),
                 obscureText:
-                !showPassword, // Sử dụng trạng thái của biến showPassword để hiện/ẩn mật khẩu
+                    !showPassword, // Sử dụng trạng thái của biến showPassword để hiện/ẩn mật khẩu
                 decoration: InputDecoration(
                   labelText: "Password",
                   prefixIcon: Container(
@@ -116,7 +144,7 @@ class _LoginPageState extends State<LoginPage> {
                     onPressed: () {
                       setState(() {
                         showPassword =
-                        !showPassword; // Khi nhấn vào nút, thay đổi trạng thái của biến showPassword
+                            !showPassword; // Khi nhấn vào nút, thay đổi trạng thái của biến showPassword
                       });
                     },
                   ),
@@ -151,7 +179,7 @@ class _LoginPageState extends State<LoginPage> {
                   width: double.infinity,
                   height: 52,
                   child: ElevatedButton(
-                      onPressed: (){
+                      onPressed: () {
                         _onLoginClick();
                       },
                       child: Text(
@@ -192,16 +220,20 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
   }
+
   void _onLoginClick() {
     String email = _emailController.text;
     String pass = _passController.text;
     //var authBloc = Myapp.of(context).authBloc;
-    LoadingDialog.showLoadingDialog(context, "Loading...");
+    //LoadingDialog.showLoadingDialog(context, "Loading...");
     authBloc.signIn(email, pass, () {
-      LoadingDialog.hideLoadingDialog(context);
+      //LoadingDialog.hideLoadingDialog(context);
 
       Navigator.of(context)
           .push(MaterialPageRoute(builder: (context) => Home()));
+      save(_emailController.text,'username');
+      save(_passController.text,'password');
+
     }, (msg) {
       LoadingDialog.hideLoadingDialog(context);
       MsgDialog.showMsgDialog(context, "Sign-In", msg);
@@ -214,7 +246,7 @@ ThemeData _themeData(Brightness brightness) {
     fontFamily: "Poppins",
     brightness: brightness,
     // Matches app icon color.
-    primarySwatch:  MaterialColor(0xFF4D8CFE, <int, Color>{
+    primarySwatch: MaterialColor(0xFF4D8CFE, <int, Color>{
       50: Color(0xFFEAF1FF),
       100: Color(0xFFCADDFF),
       200: Color(0xFFA6C6FF),
@@ -226,8 +258,8 @@ ThemeData _themeData(Brightness brightness) {
       800: Color(0xFF346FFE),
       900: Color(0xFF255CFD),
     }),
-    appBarTheme: AppBarTheme(
-      brightness: Brightness.dark,
+    appBarTheme: const AppBarTheme(
+      systemOverlayStyle: SystemUiOverlayStyle.light,
     ),
     inputDecorationTheme: InputDecorationTheme(
       isDense: true,
@@ -236,23 +268,21 @@ ThemeData _themeData(Brightness brightness) {
       errorStyle: TextStyle(height: 0.75),
       helperStyle: TextStyle(height: 0.75),
     ),
-    elevatedButtonTheme: ElevatedButtonThemeData(style: ElevatedButton.styleFrom(
+    elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
       minimumSize: Size.fromHeight(40),
     )),
-    scaffoldBackgroundColor: brightness == Brightness.dark
-        ? Colors.black
-        : null,
-    cardColor: brightness == Brightness.dark
-        ? Color.fromARGB(255, 28, 28, 30)
-        : null,
+    scaffoldBackgroundColor:
+        brightness == Brightness.dark ? Colors.black : null,
+    cardColor:
+        brightness == Brightness.dark ? Color.fromARGB(255, 28, 28, 30) : null,
     dialogTheme: DialogTheme(
       backgroundColor: brightness == Brightness.dark
           ? Color.fromARGB(255, 28, 28, 30)
           : null,
     ),
-    highlightColor: brightness == Brightness.dark
-        ? Color.fromARGB(255, 44, 44, 46)
-        : null,
+    highlightColor:
+        brightness == Brightness.dark ? Color.fromARGB(255, 44, 44, 46) : null,
     splashFactory: NoSplash.splashFactory,
   );
 }
